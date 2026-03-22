@@ -1,0 +1,180 @@
+# config.example.yaml - Example configuration for Vinted Notifier
+# Copy this file to config.yaml and customize for your needs
+
+# ===========================================
+# FILTERS
+# ===========================================
+# Define multiple filters to monitor different searches
+# Each filter runs independently and can have its own notification targets
+
+filters:
+  # Example 1: Looking for Nike sneakers
+  - name: "nike_sneakers"
+    enabled: true
+
+    # Keywords to search for (OR logic - any match works)
+    keywords:
+      - "nike air max"
+      - "nike dunk"
+      - "nike jordan"
+
+    # Keywords to exclude (any match = skip item)
+    keywords_exclude:
+      - "fake"
+      - "replica"
+      - "damaged"
+
+    # Optional: regex pattern for advanced matching
+    # keywords_regex: "air\\s+max\\s+\\d+"
+
+    # Filter by brand (OR logic)
+    brands:
+      - "Nike"
+
+    # Exclude certain brands
+    brands_exclude:
+      - "Unknown"
+
+    # Filter by size (OR logic)
+    sizes:
+      - "42"
+      - "42.5"
+      - "43"
+
+    # Price range (in filter currency)
+    price_min: 20.00
+    price_max: 150.00
+    currency: "EUR"
+
+    # Filter by location (OR logic, partial match)
+    locations:
+      - "France"
+      - "Germany"
+      - "Belgium"
+
+    # Filter by condition
+    # Options: new_with_tags, new_without_tags, very_good, good, satisfactory
+    conditions:
+      - "new_with_tags"
+      - "new_without_tags"
+      - "very_good"
+
+    # Notification targets for this filter
+    notify_discord: true
+
+  # Example 2: Looking for vintage band t-shirts
+  - name: "vintage_tees"
+    enabled: true
+
+    keywords:
+      - "vintage t-shirt"
+      - "band tee"
+      - "concert shirt"
+
+    keywords_exclude:
+      - "reprint"
+      - "bootleg"
+
+    # Using regex to match year patterns
+    keywords_regex: "(19[7-9]\\d|200\\d).*tour"
+
+    sizes:
+      - "M"
+      - "L"
+
+    price_max: 100.00
+
+    # Only notify via Discord
+    notify_discord: true
+
+  # Example 3: Monitor a specific search URL
+  - name: "custom_search"
+    enabled: false  # Disabled by default
+
+    # Direct Vinted search URL (overrides keyword search)
+    search_url: "https://www.vinted.fr/vetements?search_text=levis+501"
+
+    price_max: 80.00
+
+    notify_discord: true
+
+# ===========================================
+# RATE LIMITING
+# ===========================================
+rate_limit:
+  # Maximum requests per minute (be respectful!)
+  requests_per_minute: 10
+
+  # Maximum requests per hour
+  requests_per_hour: 100
+
+  # Backoff settings for errors
+  backoff_base: 2.0       # Base wait time in seconds
+  backoff_max: 300.0      # Maximum wait time (5 minutes)
+  jitter_factor: 0.5      # Random jitter (0-50% of wait time)
+
+  # Respect Retry-After headers from server
+  respect_retry_after: true
+
+# ===========================================
+# SCHEDULER
+# ===========================================
+scheduler:
+  # How often to check for new items (in seconds)
+  # Default: 300 (5 minutes) - don't go lower to be respectful
+  interval_seconds: 300
+
+  # Delay before first fetch after startup
+  startup_delay_seconds: 5
+
+  # Maximum concurrent fetches (for multiple filters)
+  max_concurrent_fetches: 3
+
+# ===========================================
+# STORAGE (Deduplication)
+# ===========================================
+storage:
+  # Don't notify about same item within this many hours
+  cooldown_hours: 24
+
+  # Clean up old records after this many days
+  cleanup_days: 30
+
+  # Maximum items to process per fetch
+  max_items_per_fetch: 100
+
+# ===========================================
+# NOTIFICATIONS
+# ===========================================
+notification:
+  # Include item image in notifications
+  include_image: true
+
+  # Include description text
+  include_description: true
+
+  # Maximum description length (characters)
+  max_description_length: 200
+
+  # Batch multiple items into one notification (not recommended)
+  batch_notifications: false
+  batch_max_items: 5
+  batch_delay_seconds: 10
+
+# ===========================================
+# VINTED DOMAINS
+# ===========================================
+# List of Vinted domains to support
+vinted_domains:
+  - "www.vinted.fr"
+  - "www.vinted.co.uk"
+  - "www.vinted.de"
+  - "www.vinted.es"
+  - "www.vinted.it"
+  - "www.vinted.pl"
+  - "www.vinted.nl"
+  - "www.vinted.be"
+  - "www.vinted.pt"
+
+# Default domain for searches (must be in vinted_domains list)
+default_domain: "www.vinted.fr"

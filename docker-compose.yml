@@ -1,0 +1,75 @@
+# docker-compose.yml - Local development setup for Vinted Notifier
+version: "3.8"
+
+services:
+  vinted-notifier:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: vinted-notifier
+    restart: unless-stopped
+
+    # Environment configuration
+    env_file:
+      - .env
+
+    environment:
+      - CONFIG_PATH=/app/config.yaml
+      - DATABASE_URL=sqlite+aiosqlite:///app/data/vinted.db
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - DRY_RUN=${DRY_RUN:-false}
+
+    # Mount configuration and data
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - vinted-data:/app/data
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Development service with hot reload (optional)
+  vinted-notifier-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: vinted-notifier-dev
+    profiles:
+      - dev
+
+    env_file:
+      - .env
+
+    environment:
+      - CONFIG_PATH=/app/config.yaml
+      - DATABASE_URL=sqlite+aiosqlite:///app/data/vinted.db
+      - LOG_LEVEL=DEBUG
+      - DRY_RUN=true
+
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./src:/app/src:ro
+      - vinted-data-dev:/app/data
+
+    command: ["python", "-m", "src.main", "--once", "--dry-run"]
+
+volumes:
+  vinted-data:
+    name: vinted-notifier-data
+  vinted-data-dev:
+    name: vinted-notifier-data-dev

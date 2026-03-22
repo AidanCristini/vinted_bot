@@ -1,0 +1,102 @@
+{
+  "items": [
+    {
+      "id": 123456789,
+      "title": "Nike Air Max 90 - Size 42",
+      "description": "Excellent condition Nike Air Max 90. Only worn a few times. Original box included.",
+      "price": "45.00",
+      "currency": "EUR",
+      "brand_title": "Nike",
+      "size_title": "42",
+      "status": "3",
+      "url": "/items/123456789-nike-air-max-90-size-42",
+      "photo": {
+        "id": 987654321,
+        "url": "https://images.vinted.net/items/123456789/photos/1.jpg",
+        "full_size_url": "https://images.vinted.net/items/123456789/photos/1_full.jpg",
+        "thumbnails": [
+          {
+            "url": "https://images.vinted.net/items/123456789/photos/1_thumb.jpg",
+            "width": 150,
+            "height": 150
+          }
+        ]
+      },
+      "photos": [
+        {
+          "id": 987654321,
+          "url": "https://images.vinted.net/items/123456789/photos/1.jpg"
+        },
+        {
+          "id": 987654322,
+          "url": "https://images.vinted.net/items/123456789/photos/2.jpg"
+        }
+      ],
+      "user": {
+        "id": 11111111,
+        "login": "sneaker_seller",
+        "city": "Paris"
+      },
+      "created_at_ts": 1703001600,
+      "favourite_count": 15,
+      "view_count": 234,
+      "location": {
+        "city": "Paris",
+        "country_title": "France"
+      }
+    },
+    {
+      "id": 123456790,
+      "title": "Adidas Ultraboost - Size 43",
+      "description": "Brand new with tags. Never worn. Gift that didn't fit.",
+      "price": "89.99",
+      "currency": "EUR",
+      "brand_title": "Adidas",
+      "size_title": "43",
+      "status": "1",
+      "url": "/items/123456790-adidas-ultraboost-size-43",
+      "photo": {
+        "url": "https://images.vinted.net/items/123456790/photos/1.jpg"
+      },
+      "user": {
+        "id": 22222222,
+        "login": "sport_closet"
+      },
+      "created_at_ts": 1703088000,
+      "favourite_count": 8,
+      "view_count": 102
+    },
+    {
+      "id": 123456791,
+      "title": "Puma RS-X - Size 41",
+      "description": "Good condition, some light wear on soles.",
+      "price": "35.00",
+      "currency": "EUR",
+      "brand_title": "Puma",
+      "size_title": "41",
+      "status": "4",
+      "url": "/items/123456791-puma-rs-x-size-41",
+      "photo": {
+        "url": "https://images.vinted.net/items/123456791/photos/1.jpg"
+      },
+      "user": {
+        "id": 33333333,
+        "login": "vintage_kicks",
+        "city": "Lyon"
+      },
+      "created_at_ts": 1703174400,
+      "favourite_count": 3,
+      "view_count": 56,
+      "location": {
+        "city": "Lyon",
+        "country_title": "France"
+      }
+    }
+  ],
+  "pagination": {
+    "current_page": 1,
+    "total_pages": 5,
+    "total_entries": 112,
+    "per_page": 24
+  }
+}
