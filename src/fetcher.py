@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import asyncio
+import brotli
+import gzip
 import logging
 import random
 import time
@@ -176,6 +178,8 @@ class VintedFetcher:
                 timeout=httpx.Timeout(self.timeout),
                 follow_redirects=True,
                 headers=self.DEFAULT_HEADERS,
+                # Force httpx to handle decompression
+                default_encoding="utf-8",
             )
 
     async def close(self) -> None:
@@ -271,10 +275,42 @@ class VintedFetcher:
                     f"Server error: {response.status_code}", status_code=response.status_code
                 )
 
+            # Get response content - check encoding and decompress if needed
+            raw_bytes = response.content
+            content_encoding = response.headers.get('Content-Encoding', '').lower()
+
+            logger.debug(f"Response first 4 bytes: {raw_bytes[:4].hex() if raw_bytes else 'empty'}")
+            logger.debug(f"Content-Encoding header: {content_encoding or 'not set'}")
+
+            content = None
+
+            # Manual decompression if httpx didn't handle it
+            if content_encoding == 'br' and raw_bytes:
+                # Brotli compressed
+                logger.debug("Response is brotli compressed, decompressing manually")
+                try:
+                    content = brotli.decompress(raw_bytes).decode('utf-8')
+                    logger.debug(f"Successfully decompressed brotli response ({len(raw_bytes)} -> {len(content)} bytes)")
+                except Exception as e:
+                    logger.error(f"Failed to decompress brotli response: {e}")
+                    content = response.text  # Fallback to regular text
+            elif content_encoding == 'gzip' and raw_bytes and raw_bytes[:2] == b'\x1f\x8b':
+                # Gzip compressed
+                logger.debug("Response is gzip compressed, decompressing manually")
+                try:
+                    content = gzip.decompress(raw_bytes).decode('utf-8')
+                    logger.debug(f"Successfully decompressed gzip response ({len(raw_bytes)} -> {len(content)} bytes)")
+                except Exception as e:
+                    logger.error(f"Failed to decompress gzip response: {e}")
+                    content = response.text
+            else:
+                # No compression or httpx already decompressed
+                content = response.text
+
             return FetchResult(
                 url=str(response.url),
                 status_code=response.status_code,
-                content=response.text,
+                content=content,
                 content_type=response.headers.get("Content-Type", ""),
                 headers=dict(response.headers),
                 elapsed_ms=elapsed_ms,

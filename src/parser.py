@@ -50,6 +50,9 @@ class VintedItem(BaseModel):
     @field_validator("price", mode="before")
     @classmethod
     def parse_price(cls, v: Any) -> float:
+        if isinstance(v, dict):
+            # Handle price as dict (e.g., {"amount": 10.0, "currency_code": "EUR"})
+            return float(v.get("amount", 0))
         if isinstance(v, str):
             # Remove currency symbols and parse
             cleaned = re.sub(r"[^\d.,]", "", v)
@@ -154,6 +157,8 @@ class JSONParser(BaseParser):
             data = json.loads(content)
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse JSON: {e}")
+            logger.debug(f"Response content (first 500 chars): {content[:500]}")
+            logger.debug(f"Response length: {len(content)} chars")
             return ParseResult(parse_errors=[f"JSON decode error: {e}"])
 
         # Handle different response structures

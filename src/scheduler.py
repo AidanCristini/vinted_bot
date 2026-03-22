@@ -221,6 +221,12 @@ class VintedScheduler:
                         currency=filter_config.currency,
                     )
 
+                # Log fetch result details
+                logger.debug(
+                    f"Fetch result: url={result.url}, status={result.status_code}, "
+                    f"content_type={result.content_type}, content_length={len(result.content)}"
+                )
+
                 # Parse response
                 parser = get_parser(result.content_type)
                 base_url = f"https://{self.config.app.default_domain}"
