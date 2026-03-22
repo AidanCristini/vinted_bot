@@ -10,78 +10,112 @@
 filters:
   # Example 1: Looking for Nike sneakers
   - name: "nike_sneakers"
-    enabled: true
+    enabled: true  # Set to false to disable this filter
 
     # Keywords to search for (OR logic - any match works)
+    # Examples: ["nike air max"], ["adidas yeezy"], ["vintage levi's 501"]
     keywords:
       - "nike air max"
       - "nike dunk"
       - "nike jordan"
 
     # Keywords to exclude (any match = skip item)
+    # Examples: ["fake"], ["damaged", "stained"], ["replica", "counterfeit"]
     keywords_exclude:
       - "fake"
       - "replica"
       - "damaged"
 
     # Optional: regex pattern for advanced matching
+    # Example: "air\\s+max\\s+\\d+" matches "air max 90", "air max 97", etc.
+    # Leave commented out if not needed
     # keywords_regex: "air\\s+max\\s+\\d+"
 
     # Filter by brand (OR logic)
+    # Examples: ["Nike"], ["Adidas", "Puma"], ["Zara", "H&M"], []
+    # Use [] (empty list) to accept any brand
     brands:
       - "Nike"
 
-    # Exclude certain brands
+    # Exclude certain brands (any match = skip item)
+    # Examples: ["Unknown"], ["Nike", "Adidas"], []
     brands_exclude:
       - "Unknown"
 
     # Filter by size (OR logic)
+    # Shoe sizes (EU): ["40", "40.5", "41", "42", "42.5", "43", "44", "45"]
+    # Shoe sizes (US): ["8", "8.5", "9", "9.5", "10", "10.5", "11"]
+    # Shoe sizes (UK): ["7", "7.5", "8", "8.5", "9", "9.5", "10"]
+    # Clothing sizes: ["XS", "S", "M", "L", "XL", "XXL"]
+    # Use [] (empty list) to accept any size
     sizes:
       - "42"
       - "42.5"
       - "43"
 
     # Price range (in filter currency)
+    # Set price_min and/or price_max to filter by price
+    # Omit price_min to have no minimum, omit price_max to have no maximum
     price_min: 20.00
     price_max: 150.00
+
+    # Currency code
+    # Options: "EUR", "GBP", "USD", "PLN", "CZK", etc.
     currency: "EUR"
 
     # Filter by location (OR logic, partial match)
+    # Country examples: ["France"], ["Germany", "Belgium"], ["United States"]
+    # City examples: ["Paris"], ["Berlin", "Munich"], ["London"]
+    # Use [] (empty list) to accept items from any location
     locations:
       - "France"
       - "Germany"
       - "Belgium"
 
-    # Filter by condition
-    # Options: new_with_tags, new_without_tags, very_good, good, satisfactory
+    # Filter by condition (OR logic)
+    # Available options (use exact strings):
+    #   - "new_with_tags"      - Brand new with original tags
+    #   - "new_without_tags"   - Brand new but without tags
+    #   - "very_good"          - Very good condition, barely worn
+    #   - "good"               - Good condition, some wear
+    #   - "satisfactory"       - Satisfactory condition, visible wear
+    # Use [] (empty list) to accept any condition
     conditions:
       - "new_with_tags"
       - "new_without_tags"
       - "very_good"
 
     # Notification targets for this filter
-    notify_discord: true
+    notify_discord: true  # Send notifications to Discord webhook
 
   # Example 2: Looking for vintage band t-shirts
   - name: "vintage_tees"
     enabled: true
 
+    # Search for multiple keyword phrases
     keywords:
       - "vintage t-shirt"
       - "band tee"
       - "concert shirt"
 
+    # Exclude reprints and bootlegs
     keywords_exclude:
       - "reprint"
       - "bootleg"
 
-    # Using regex to match year patterns
+    # Using regex to match year patterns (1970s-2000s tour shirts)
+    # This pattern matches: "1979 tour", "1985 concert tour", "2005 world tour", etc.
+    # Regex escaping: use \\ for \ in YAML strings
     keywords_regex: "(19[7-9]\\d|200\\d).*tour"
 
+    # Clothing size filter
+    # Examples: ["XS", "S"], ["M", "L", "XL"], []
     sizes:
       - "M"
       - "L"
 
+    # Max price only (no minimum)
+    # Omit price_min to accept items at any price from €0 and up
     price_max: 100.00
 
     # Only notify via Discord
@@ -89,11 +123,25 @@ filters:
 
   # Example 3: Monitor a specific search URL
   - name: "custom_search"
-    enabled: false  # Disabled by default
+    enabled: false  # Disabled by default - set to true to activate
 
-    # Direct Vinted search URL (overrides keyword search)
+    # Direct Vinted search URL (overrides keyword/brand/catalog filters)
+    # Use this when you want to monitor a specific Vinted search page
+    # Example URLs:
+    #   - "https://www.vinted.fr/vetements?search_text=levis+501"
+    #   - "https://www.vinted.co.uk/men/shoes/trainers?brand_ids[]=53&size_ids[]=1210"
     search_url: "https://www.vinted.fr/vetements?search_text=levis+501"
 
+    # Optional: Vinted catalog ID (category filter)
+    # Common catalog IDs:
+    #   - Women's clothing: 1
+    #   - Men's clothing: 2
+    #   - Kids' clothing: 3
+    #   - Shoes: 4 (varies by domain)
+    # Leave commented out or omit to search all categories
+    # catalog_id: 4
+
+    # Price filter still works with search_url
     price_max: 80.00
 
     notify_discord: true
@@ -101,80 +149,106 @@ filters:
 # ===========================================
 # RATE LIMITING
 # ===========================================
+# Control how often the bot makes requests to Vinted
+# Be respectful - don't set these too high or you may get rate limited/blocked
 rate_limit:
-  # Maximum requests per minute (be respectful!)
+  # Maximum requests per minute (recommended: 10 or less)
   requests_per_minute: 10
 
-  # Maximum requests per hour
+  # Maximum requests per hour (recommended: 100 or less)
   requests_per_hour: 100
 
-  # Backoff settings for errors
-  backoff_base: 2.0       # Base wait time in seconds
+  # Backoff settings for errors (exponential backoff on failures)
+  backoff_base: 2.0       # Base wait time in seconds (2, 4, 8, 16...)
   backoff_max: 300.0      # Maximum wait time (5 minutes)
-  jitter_factor: 0.5      # Random jitter (0-50% of wait time)
+  jitter_factor: 0.5      # Random jitter (0-50% of wait time to avoid thundering herd)
 
-  # Respect Retry-After headers from server
+  # Respect Retry-After headers from server (recommended: true)
   respect_retry_after: true
 
 # ===========================================
 # SCHEDULER
 # ===========================================
+# Control when and how often the bot checks for new items
 scheduler:
   # How often to check for new items (in seconds)
-  # Default: 300 (5 minutes) - don't go lower to be respectful
+  # Examples: 60 (1 min), 300 (5 mins), 600 (10 mins), 1800 (30 mins)
+  # Default: 300 (5 minutes) - don't go lower than 60 to be respectful
+  # Note: Each filter runs on this interval independently
   interval_seconds: 300
 
-  # Delay before first fetch after startup
+  # Delay before first fetch after startup (in seconds)
+  # Useful to let the bot initialize before making requests
   startup_delay_seconds: 5
 
   # Maximum concurrent fetches (for multiple filters)
+  # If you have 5 filters and set this to 3, max 3 will run at once
+  # Higher = faster but more load on Vinted's servers
   max_concurrent_fetches: 3
 
 # ===========================================
 # STORAGE (Deduplication)
 # ===========================================
+# Control how the bot tracks items to avoid duplicate notifications
 storage:
   # Don't notify about same item within this many hours
+  # Example: if set to 24, you won't get notified about the same item twice in 24hrs
+  # Set to 0 to notify every time (not recommended - will spam)
   cooldown_hours: 24
 
   # Clean up old records after this many days
+  # Old item records are deleted from database after this period
+  # Examples: 7 (1 week), 30 (1 month), 90 (3 months)
   cleanup_days: 30
 
   # Maximum items to process per fetch
+  # Limits how many items are checked in each fetch cycle
+  # Higher = more thorough but slower processing
   max_items_per_fetch: 100
 
 # ===========================================
 # NOTIFICATIONS
 # ===========================================
+# Customize what information is included in notifications
 notification:
-  # Include item image in notifications
+  # Include item image in notifications (true/false)
+  # Shows the first product image from Vinted listing
   include_image: true
 
-  # Include description text
+  # Include description text (true/false)
+  # Shows the seller's item description
   include_description: true
 
   # Maximum description length (characters)
+  # Long descriptions are truncated to this length
+  # Examples: 100 (short), 200 (medium), 500 (long)
   max_description_length: 200
 
   # Batch multiple items into one notification (not recommended)
+  # When true, waits and groups multiple new items into single message
+  # Usually better to keep false for real-time notifications
   batch_notifications: false
-  batch_max_items: 5
-  batch_delay_seconds: 10
+  batch_max_items: 5          # Max items per batch (if batching enabled)
+  batch_delay_seconds: 10     # Wait time before sending batch (if batching enabled)
 
 # ===========================================
 # VINTED DOMAINS
 # ===========================================
-# List of Vinted domains to support
+# List of supported Vinted country domains
+# The bot can work with any of these domains
 vinted_domains:
-  - "www.vinted.fr"
-  - "www.vinted.co.uk"
-  - "www.vinted.de"
-  - "www.vinted.es"
-  - "www.vinted.it"
-  - "www.vinted.pl"
-  - "www.vinted.nl"
-  - "www.vinted.be"
-  - "www.vinted.pt"
+  - "www.vinted.fr"      # France
+  - "www.vinted.co.uk"   # United Kingdom
+  - "www.vinted.de"      # Germany
+  - "www.vinted.es"      # Spain
+  - "www.vinted.it"      # Italy
+  - "www.vinted.pl"      # Poland
+  - "www.vinted.nl"      # Netherlands
+  - "www.vinted.be"      # Belgium
+  - "www.vinted.pt"      # Portugal
+  # Add more as needed: www.vinted.com, www.vinted.cz, www.vinted.lt, etc.
 
-# Default domain for searches (must be in vinted_domains list)
+# Default domain for searches (must be in vinted_domains list above)
+# This is used when filters don't specify a search_url
+# Change to your preferred country's Vinted domain
 default_domain: "www.vinted.fr"
